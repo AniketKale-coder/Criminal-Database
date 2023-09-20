@@ -1,18 +1,270 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.2.0/fonts/remixicon.css" rel="stylesheet">
+ 
     <title>Image Upload</title>
+    <style>
+      @font-face {
+  font-family: lato;
+  src: url(../fonts/Lato-Regular.ttf);
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body,
+html {
+  height: 100vh;
+  background: url(./abstract-digital-grid-black-background.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+  display: flex;
+  flex: 1;
+  font-family: lato;
+}
+
+
+form{
+  display: flex;
+}
+.left {
+  flex: 0.5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#uploadContainer{
+  height: 300px;
+  width: 400px;
+  background-color: #00171b;
+  color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  border-radius: 20px;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  padding: 1em;
+}
+#drop-area{
+  padding: 1em;
+}
+
+#uploadContainer svg{
+  height: 50%;
+  width: 50%;
+  margin: 0 auto;
+ fill: white;
+ stroke: white;
+}
+
+button{
+  padding: 1.5em 2.5em;
+  background-color: rgb(0, 122, 82);
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  color: white;
+  font-family: lato;
+  font-size: 1em;
+}
+.right{
+  display: flex;
+  flex: 0.5;
+  align-items: center;
+  justify-content: center;
+}
+.infocontainter{
+  height: 500px;
+  width: 350px;
+  background-color: #fafafa;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  color: black;
+}
+.loading {
+  display: none;
+  text-align: center;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #000;
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 10px;
+}
+
+
+
+    </style>
   </head>
   <body>
-    <h1>Image Upload</h1>
+    
     <form
-      action="https://sshaids2r9.execute-api.us-east-1.amazonaws.com/Prod/upload"
-      method="post"
-      enctype="multipart/form-data"
+    action="https://sshaids2r9.execute-api.us-east-1.amazonaws.com/Prod/upload"
+    method="post"
+    enctype="multipart/form-data"
+    onsubmit="event.preventDefault(); sendImageToServer();"
     >
-      <input type="file" name="image1" accept="image/*" required />
-      <input type="file" name="image2" accept="image/*" required />
-      <button type="submit">Upload</button>
-    </form>
+    <div class="left">
+      <label for="input-file" id="drop-area">
+          <input type="file" accept="images/*" id="input-file" hidden />
+      <div id="uploadContainer">
+          <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48"><path d="M480-481q-66 0-108-42t-42-108q0-66 42-108t108-42q66 0 108 42t42 108q0 66-42 108t-108 42ZM160-160v-94q0-38 19-65t49-41q67-30 128.5-45T480-420q62 0 123 15.5t127.921 44.694q31.301 14.126 50.19 40.966Q800-292 800-254v94H160Zm60-60h520v-34q0-16-9.5-30.5T707-306q-64-31-117-42.5T480-360q-57 0-111 11.5T252-306q-14 7-23 21.5t-9 30.5v34Zm260-321q39 0 64.5-25.5T570-631q0-39-25.5-64.5T480-721q-39 0-64.5 25.5T390-631q0 39 25.5 64.5T480-541Zm0-90Zm0 411Z"/></svg>
+          <p>Drag and drop file here! or click to upload.</p>
+
+      </div>
+      
+      </label>
+      
+ 
+          <div class="submit"  id="btn"><button >
+              Continue
+          </button></div>
+      
+  </div>
+      </form>
+
+
+<div class="right">  
+    <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+    
+    <div class="infocontainter">
+    <div id="container"></div>
+    <div id="details"></div>
+
+
+    
+
+<label class="name">Name:</label>
+<div id="resultedImage"><img src="" alt=""></div>
+<p class="info">nothing to show</p>
+
+
+</div>
+
+
+
+</div>
+</div>
+
+    <script>
+      const imageInput = document.getElementById('input-file');
+const dragArea = document.getElementById('drop-area');
+const imageContainer = document.getElementById('uploadContainer');
+
+imageInput.addEventListener("change", uploadImage)
+
+function uploadImage() {
+  const file = imageInput.files[0];
+
+  if (file) {
+    let imgLink = URL.createObjectURL(file);
+    imageContainer.style.backgroundImage = `url(${imgLink})`;
+    imageContainer.textContent = "";
+  } else {
+    // Handle the case when no image is selected
+    imageContainer.style.backgroundImage = "";
+    imageContainer.textContent = "Drag and drop file here! or click to upload.";
+  }
+}
+
+dragArea.addEventListener("dragover", (e) => {
+  e.preventDefault();
+}
+)
+dragArea.addEventListener("drop", (e) => {
+  e.preventDefault();
+  imageInput.files = e.dataTransfer.files;
+  uploadImage();
+}
+)
+
+
+
+
+
+const rightContainer = document.querySelector('.right');
+const nameElement = document.querySelector('.name');
+const infoElement = document.querySelector('.info');
+const resultImageElement = document.getElementById('resultedImage').querySelector('img');
+
+
+const uploadButton = document.getElementById('btn');
+uploadButton.addEventListener('click', sendImageToServer);
+
+
+async function sendImageToServer() {
+    const file = imageInput.files[0];
+
+    if (file) {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch('YOUR_AWS_API_ENDPOINT_URL', {
+                method: 'POST',
+                body: formData
+            });
+
+            const responseData = await response.json();
+
+      
+            handleResponse(responseData);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        }
+    } else {
+        console.error('No image selected.');
+    }
+}
+
+
+const loadingElement = document.querySelector('.loading');
+
+
+async function handleResponse(responseData) {
+    loadingElement.style.display = 'block';
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    loadingElement.style.display = 'none';
+
+    if (responseData.name && responseData.info && responseData.imageURL) {
+        nameElement.textContent = `Name: ${responseData.name}`;
+        infoElement.textContent = responseData.info;
+        resultImageElement.src = responseData.imageURL;
+
+        // Hide the drag and drop area and show the right container
+        dragArea.style.display = 'none';
+        rightContainer.style.display = 'block';
+    } else {
+        // Handle the case where the response data is incomplete or unexpected
+        console.error('Invalid response data:', responseData);
+    }
+}
+
+
+    </script>
   </body>
 </html>
