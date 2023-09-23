@@ -46,6 +46,8 @@ def registration():
     return render_template('registration.html')
 
 
+
+
 @app.route('/registration', methods=['POST'])
 def registre():
     image = request.files['image']
@@ -118,4 +120,6 @@ def upload():
 
 
 if __name__ == '__main__':
+    app = Flask(__name__, static_url_path='/static')
     app.run(debug=True, port=5000)
+
