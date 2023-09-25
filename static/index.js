@@ -50,9 +50,12 @@ async function sendImageToServer() {
       formData.append('image', file);
 
       try {
-          const response = await fetch('https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/', {
+          const response = await fetch('https://cors-anywhere.herokuapp.com/https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/', {
               method: 'POST',
-              body: formData
+              body: formData,
+              headers: {
+                  'Origin': 'http://127.0.0.1:5000' 
+              }
           });
 
           if (response.ok) {
@@ -68,6 +71,7 @@ async function sendImageToServer() {
       console.error('No image selected.');
   }
 }
+
 
 
 const loadingElement = document.querySelector('.loading');
