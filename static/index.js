@@ -12,7 +12,6 @@ function uploadImage() {
     imageContainer.style.backgroundImage = `url(${imgLink})`;
     imageContainer.textContent = "";
   } else {
-    // Handle the case when no image is selected
     imageContainer.style.backgroundImage = "";
     imageContainer.textContent = "Drag and drop file here! or click to upload.";
   }
@@ -44,28 +43,30 @@ uploadButton.addEventListener('click', sendImageToServer);
 
 
 async function sendImageToServer() {
-    const file = imageInput.files[0];
+  const file = imageInput.files[0];
 
-    if (file) {
-        const formData = new FormData();
-        formData.append('image', file);
+  if (file) {
+      const formData = new FormData();
+      formData.append('image', file);
 
-        try {
-            const response = await fetch('YOUR_AWS_API_ENDPOINT_URL', {
-                method: 'POST',
-                body: formData
-            });
+      try {
+          const response = await fetch('https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/', {
+              method: 'POST',
+              body: formData
+          });
 
-            const responseData = await response.json();
-
-      
-            handleResponse(responseData);
-        } catch (error) {
-            console.error('Error uploading image:', error);
-        }
-    } else {
-        console.error('No image selected.');
-    }
+          if (response.ok) {
+              const responseData = await response.json();
+              handleResponse(responseData);
+          } else {
+              console.error('Image upload failed with status:', response.status);
+          }
+      } catch (error) {
+          console.error('Error uploading image:', error);
+      }
+  } else {
+      console.error('No image selected.');
+  }
 }
 
 
@@ -83,12 +84,10 @@ async function handleResponse(responseData) {
         nameElement.textContent = `Name: ${responseData.name}`;
         infoElement.textContent = responseData.info;
         resultImageElement.src = responseData.imageURL;
-
-        // Hide the drag and drop area and show the right container
         dragArea.style.display = 'none';
         rightContainer.style.display = 'block';
     } else {
-        // Handle the case where the response data is incomplete or unexpected
+
         console.error('Invalid response data:', responseData);
     }
 }
