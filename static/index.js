@@ -2,7 +2,7 @@ const imageInput = document.getElementById('input-file');
 const dragArea = document.getElementById('drop-area');
 const imageContainer = document.getElementById('uploadContainer');
 
-imageInput.addEventListener("change", uploadImage)
+imageInput.addEventListener("change", uploadImage);
 
 function uploadImage() {
   const file = imageInput.files[0];
@@ -19,24 +19,21 @@ function uploadImage() {
 
 dragArea.addEventListener("dragover", (e) => {
   e.preventDefault();
-}
-)
+});
+
 dragArea.addEventListener("drop", (e) => {
   e.preventDefault();
   imageInput.files = e.dataTransfer.files;
   uploadImage();
-}
-)
+});
 
 const rightContainer = document.querySelector('.right');
 const nameElement = document.querySelector('.name');
 const infoElement = document.querySelector('.info');
 const resultImageElement = document.getElementById('resultedImage').querySelector('img');
 
-
 const uploadButton = document.getElementById('btn');
 uploadButton.addEventListener('click', sendImageToServer);
-
 
 async function sendImageToServer() {
   const file = imageInput.files[0];
@@ -46,17 +43,10 @@ async function sendImageToServer() {
     formData.append('image', file);
 
     try {
-      const response = await fetch('https://cors-anywhere.herokuapp.com/https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/suspectesimages/${suspectsimages}.jpeg', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Origin': 'http://127.0.0.1:5000'
-        }
-      });
-
-      if (response.ok) {
-        const responseData = await response.json();
-        handleResponse(responseData);
+      const response = await axios.post('https://cors-anywhere.herokuapp.com/https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/suspectesimages/', formData);
+    
+      if (response.status === 200) {
+        handleResponse(response.data);
       } else {
         console.error('Image upload failed with status:', response.status);
       }
@@ -68,10 +58,7 @@ async function sendImageToServer() {
   }
 }
 
-
-
 const loadingElement = document.querySelector('.loading');
-
 
 async function handleResponse(responseData) {
   loadingElement.style.display = 'block';
@@ -87,8 +74,6 @@ async function handleResponse(responseData) {
     dragArea.style.display = 'none';
     rightContainer.style.display = 'block';
   } else {
-
     console.error('Invalid response data:', responseData);
   }
 }
-
