@@ -28,10 +28,6 @@ dragArea.addEventListener("drop", (e) => {
 }
 )
 
-
-
-
-
 const rightContainer = document.querySelector('.right');
 const nameElement = document.querySelector('.name');
 const infoElement = document.querySelector('.info');
@@ -46,29 +42,29 @@ async function sendImageToServer() {
   const file = imageInput.files[0];
 
   if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
+    const formData = new FormData();
+    formData.append('image', file);
 
-      try {
-          const response = await fetch('https://cors-anywhere.herokuapp.com/https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/', {
-              method: 'POST',
-              body: formData,
-              headers: {
-                  'Origin': 'http://127.0.0.1:5000' 
-              }
-          });
+    try {
+      const response = await fetch('https://cors-anywhere.herokuapp.com/https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/suspectesimages/${suspectsimages}.jpeg', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Origin': 'http://127.0.0.1:5000'
+        }
+      });
 
-          if (response.ok) {
-              const responseData = await response.json();
-              handleResponse(responseData);
-          } else {
-              console.error('Image upload failed with status:', response.status);
-          }
-      } catch (error) {
-          console.error('Error uploading image:', error);
+      if (response.ok) {
+        const responseData = await response.json();
+        handleResponse(responseData);
+      } else {
+        console.error('Image upload failed with status:', response.status);
       }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
   } else {
-      console.error('No image selected.');
+    console.error('No image selected.');
   }
 }
 
@@ -78,21 +74,21 @@ const loadingElement = document.querySelector('.loading');
 
 
 async function handleResponse(responseData) {
-    loadingElement.style.display = 'block';
+  loadingElement.style.display = 'block';
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+  await new Promise(resolve => setTimeout(resolve, 1500));
 
-    loadingElement.style.display = 'none';
+  loadingElement.style.display = 'none';
 
-    if (responseData.name && responseData.info && responseData.imageURL) {
-        nameElement.textContent = `Name: ${responseData.name}`;
-        infoElement.textContent = responseData.info;
-        resultImageElement.src = responseData.imageURL;
-        dragArea.style.display = 'none';
-        rightContainer.style.display = 'block';
-    } else {
+  if (responseData.name && responseData.info && responseData.imageURL) {
+    nameElement.textContent = `Name: ${responseData.name}`;
+    infoElement.textContent = responseData.info;
+    resultImageElement.src = responseData.imageURL;
+    dragArea.style.display = 'none';
+    rightContainer.style.display = 'block';
+  } else {
 
-        console.error('Invalid response data:', responseData);
-    }
+    console.error('Invalid response data:', responseData);
+  }
 }
 

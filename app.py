@@ -34,6 +34,7 @@ dynamodb_client = boto3.resource('dynamodb',
                                  aws_access_key_id=AWS_SECRET_ACCESS_ID,
                                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                                  region_name=AWS_REGION)
+criminal_table = dynamodb_client.Table("CriminalData")
 
 
 @app.route('/')
@@ -44,8 +45,6 @@ def index():
 @app.route('/registration.html')
 def registration():
     return render_template('registration.html')
-
-
 
 
 @app.route('/registration', methods=['POST'])
@@ -79,7 +78,6 @@ def registre():
     face_id = response['FaceRecords'][0]['Face']['FaceId']
 
     # Store data in DynamoDB
-    criminal_table = dynamodb_client.Table("CriminalData")
     criminal_table.put_item(Item={
         'CriminalId': criminal_id,
         'FirstName': first_name,
@@ -106,7 +104,7 @@ def upload():
                 'target_file': f'{image1.filename}',
             }
             lambda_response = lambda_client.invoke(
-                FunctionName='faceComp',
+                FunctionName='',
                 InvocationType='RequestResponse',  # Synchronous invocation
                 Payload=json.dumps(lambda_payload)
             )

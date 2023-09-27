@@ -5,65 +5,52 @@ import boto3
 
 AWS_REGION = 'us-east-1'
 
-def initialize_clients():
-    rekognition = boto3.client('rekognition', region_name=AWS_REGION)
-    dynamodb_client = boto3.resource('dynamodb', region_name=AWS_REGION)
-    s3 = boto3.client('s3', region_name=AWS_REGION)
-    return rekognition, dynamodb_client, s3
+s3 = boto3.client('s3', region_name=AWS_REGION)
+lambda_client = boto3.client('lambda', region_name=AWS_REGION)
+rekognition_client = boto3.client('rekognition',region_name=AWS_REGION)
+dynamodb_client = boto3.resource('dynamodb',region_name=AWS_REGION)
+bucket_name='suspectesimages'
+criminal_table = dynamodb_client.Table("CriminalData")
 
-def identify_face(image_bytes, rekognition, dynamodb_client):
-    try:
-        criminal_Table = dynamodb_client.Table("CriminalData")
 
-        response = rekognition.search_faces_by_image(
-            CollectionId='Criminals',
-            Image={'Bytes': image_bytes}
-        )
 
-        for face_match in response['FaceMatches']:
-            face_id = face_match['Face']['FaceId']
-            face = criminal_Table.get_item(
-                Key={'rekognitionId': face_id}
-            )
+def lambda_handler(event, context): 
+    print(event)
+    objectKey = event ['queryStringParameters']['objectKey'] 
+    image_bytes = s3.get_object(Bucket=bucket_name,Key=objectKey) ['Body'].read() 
+    response = rekognition_client.search_faces_by_image(
+    CollectionId='employees', Image={'Bytes': image_bytes})
 
-            if 'Item' in face:
-                return build_response(200, {
-                    "message": "success",
-                    "data": {
-                        "personName": face["Item"]["firstName"]
-                    }
-                })
-
-        return build_response(404, {"message": "Person Not Found"})
-    except Exception as e:
-        logging.error(f"Error in identify_face: {str(e)}")
-        return build_response(500, {"message": "Internal Server Error"})
-
-def build_response(status_code, body=None):
-    response = {
-        'statusCode': status_code,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+    for match in response['FaceMatches']: 
+        print(match['Face']['FaceId'], match ['Face']['Confidence'])
+        face = criminal_table.get_item(
+        Key={
+        'rekognitionId': match['Face']['FaceId']
         }
+    )
+    if 'Item' in face:
+        print('Person Found: ', face['Item'])
+        return buildResponse(200, { 
+        'Message': 'Success',
+        'firstName': face['Item']['firstName'],
+        'lastName': face['Item']['lastName'],
+        'criminal_id': face['Item']['criminal_id'],
+        'date_of_birth': face['Item']['date_of_birth'],
+        'years_active': face['Item']['years_active'],
+        'criminal_charges_list': face['Item']['criminal_charges_list'],
+        'nick_name': face['Item']['nick_name']
+        })
+    print('Person could not be recognized.') 
+    return buildResponse(403, {'Message': 'Person Not Found'})
+
+def buildResponse(statusCode, body=None): 
+    response = {
+    'statusCode': statusCode,
+    'headers': {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'}
     }
     if body is not None:
-        response['body'] = json.dumps(body)
+        response['body'] = json.dumps (body)
     return response
-
-def lambda_handler(event, context):
-    rekognition, dynamodb_client, s3 = initialize_clients()
-
-    try:
-        target_file = event['target_file']
-        image_bytes = s3.get_object(Bucket="suspectesimages", Key=target_file)['Body'].read()
-
-        face_matches = identify_face(image_bytes, rekognition, dynamodb_client)
-        logging.info(f"Face matches: {face_matches}")
-
-        return face_matches
-    except Exception as e:
-        logging.error(f"Error in lambda_handler: {str(e)}")
-        return build_response(500, {"message": "Internal Server Error"})
-    
 
