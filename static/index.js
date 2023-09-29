@@ -1,3 +1,6 @@
+
+
+
 const imageInput = document.getElementById('input-file');
 const dragArea = document.getElementById('drop-area');
 const imageContainer = document.getElementById('uploadContainer');
@@ -32,8 +35,8 @@ const nameElement = document.querySelector('.name');
 const infoElement = document.querySelector('.info');
 const resultImageElement = document.getElementById('resultedImage').querySelector('img');
 
-const uploadButton = document.getElementById('btn');
-uploadButton.addEventListener('click', sendImageToServer);
+// const uploadButton = document.getElementById('btn');
+// uploadButton.addEventListener('click', sendImageToServer);
 
 async function sendImageToServer() {
   const file = imageInput.files[0];
@@ -42,20 +45,46 @@ async function sendImageToServer() {
     const formData = new FormData();
     formData.append('image', file);
 
-    try {
-      const response = await axios.post('https://cors-anywhere.herokuapp.com/https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/suspectesimages/', formData);
+    const UploadedImage = crypto.randomUUID();
+
+
+
+      fetch(`https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/suspectesimages/${UploadedImage}.jpeg`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type' : 'image/jpeg'
+
+        },
+        body: formData,
+      }).then(async()=>{
+        const response = await authenticate(uploadImage);
+        if(response == "Success")
+        {
+          console.log("success");
+        }else{
+          console.log("failed");
+        }
+      }).catch(e=>{
+        console.error(e);
+      })
     
-      if (response.status === 200) {
-        handleResponse(response.data);
-      } else {
-        console.error('Image upload failed with status:', response.status);
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
     }
-  } else {
-    console.error('No image selected.');
-  }
+}
+
+async function authenticate(UploadedImage){
+  const requestUrl = 'https://ryufmqrr61.execute-api.us-east-1.amazonaws.com/dev/criminal?' + new URLSearchParams({
+    objectKey: `${UploadedImage}.jpeg`
+  });
+  return await fetch(requestUrl,{
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    }
+  }).then(res => res.json())
+  .then((data) =>{
+    return data;
+  }).catch(error => console.error(error));
 }
 
 const loadingElement = document.querySelector('.loading');
@@ -77,3 +106,7 @@ async function handleResponse(responseData) {
     console.error('Invalid response data:', responseData);
   }
 }
+document.querySelector('form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  sendImageToServer();
+});

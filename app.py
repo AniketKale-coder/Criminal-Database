@@ -2,11 +2,15 @@ import json
 import os
 import uuid
 
+
 import boto3
 from flask import Flask, redirect, render_template, request, url_for
 from pyparsing import Literal
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+CORS(app)
 
 AWS_SECRET_ACCESS_ID = os.environ.get('ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('KEY')

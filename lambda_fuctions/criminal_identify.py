@@ -48,7 +48,8 @@ def buildResponse(statusCode, body=None):
     'statusCode': statusCode,
     'headers': {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*'}
+    'Access-Control-Allow-Origin': '*'
+    }
     }
     if body is not None:
         response['body'] = json.dumps (body)
